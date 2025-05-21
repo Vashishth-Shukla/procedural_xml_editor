@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 600
+  ClientHeight = 619
   ClientWidth = 800
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object Form1: TForm1
   object Splitter1: TSplitter
     Left = 250
     Top = 0
-    Height = 600
+    Height = 619
     ExplicitLeft = 112
     ExplicitTop = 272
     ExplicitHeight = 100
@@ -27,7 +27,7 @@ object Form1: TForm1
     Left = 0
     Top = 0
     Width = 250
-    Height = 600
+    Height = 619
     Align = alLeft
     Indent = 19
     ReadOnly = True
@@ -37,7 +37,7 @@ object Form1: TForm1
     Left = 253
     Top = 0
     Width = 547
-    Height = 600
+    Height = 619
     Align = alClient
     Lines.Strings = (
       'Memo1')
@@ -45,18 +45,15 @@ object Form1: TForm1
     TabOrder = 1
     WordWrap = False
     OnChange = Memo1Change
-    ExplicitLeft = 256
-    ExplicitTop = -8
   end
-  object PanelDetails: TPanel
+  object PanelDetailView: TPanel
     Left = 253
     Top = 0
     Width = 547
-    Height = 600
+    Height = 619
     Align = alClient
     TabOrder = 2
     Visible = False
-    ExplicitLeft = 256
     object LabelSelectNode: TLabel
       Left = 26
       Top = 16
@@ -127,14 +124,11 @@ object Form1: TForm1
         Lines.Strings = (
           'MemoNodeText')
         TabOrder = 0
-        ExplicitLeft = 3
-        ExplicitTop = 16
-        ExplicitWidth = 405
       end
     end
     object GroupBoxChildren: TGroupBox
       Left = 24
-      Top = 376
+      Top = 384
       Width = 481
       Height = 217
       Caption = 'GroupBoxChildren'
@@ -208,6 +202,7 @@ object Form1: TForm1
       Caption = 'View'
       object ToggleRawView1: TMenuItem
         Caption = 'Toggle Raw View'
+        OnClick = ToggleRawView1Click
       end
     end
   end

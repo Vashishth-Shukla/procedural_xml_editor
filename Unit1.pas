@@ -26,7 +26,7 @@ type
     Splitter1: TSplitter;
     View1: TMenuItem;
     ToggleRawView1: TMenuItem;
-    PanelDetails: TPanel;
+    PanelDetailView: TPanel;
     GroupBoxAttributes: TGroupBox;
     GroupBoxText: TGroupBox;
     GroupBoxChildren: TGroupBox;
@@ -54,7 +54,8 @@ type
 
     procedure LoadXMLIntoTree(Doc: IXMLDocument);
 
-    procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES; // Allow file darg-drop
+    procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES;
+    procedure ToggleRawView1Click(Sender: TObject); // Allow file darg-drop
 
 
   private
@@ -63,6 +64,8 @@ type
 
     FXMLDoc: IXMLDocument;
     ShowRaw: Boolean;
+    IsNodeSelected: Boolean;
+    HasNodeChildren: Boolean;
 
 
   public
@@ -130,6 +133,8 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   ShowRaw := True; // Raw view is default --- for now
+  IsNodeSelected:= False;
+  HasNodeChildren:= False;
   DragAcceptFiles(Handle, True); // Allow file drag-drop
   New1Click(nil); // simulate clicking File > New on startup
 end;
@@ -158,12 +163,16 @@ begin
   TempFile := TPath.Combine(TPath.GetTempPath, TPath.GetRandomFileName + '.xml');
 
   // Create minimal XML content
-  Memo1.Lines.Text := '<?xml version="1.0" encoding="UTF-8"?>' + sLineBreak +
-                      '<root>'+ sLineBreak +
-                      '<!-- Add your XML content here -->' + sLineBreak +
-                      '</root>';
-
-  Memo1.Lines.SaveToFile(TempFile);
+  var XMLContent := TStringList.Create;
+  try
+    XMLContent.Text := '<?xml version="1.0" encoding="UTF-8"?>' + sLineBreak +
+                       '<root>' + sLineBreak +
+                       '<!-- Add your XML content here -->' + sLineBreak +
+                       '</root>';
+    XMLContent.SaveToFile(TempFile);
+  finally
+    XMLContent.Free;
+  end;
 
   CurrentFileName := TempFile;
 
@@ -184,6 +193,7 @@ begin
     Memo1.Text := FXMLDoc.XML.Text
   else
     Memo1.Clear;
+
 
   TreeView1.Items.Clear;
   LoadXMLIntoTree(FXMLDoc);
@@ -239,7 +249,6 @@ begin
   end;
 end;
 
-
 procedure TForm1.LoadXMLIntoTree(Doc: IXMLDocument);
   procedure AddNodeToTreeView(XMLNode: IXMLNode; ParentTreeNode: TTreeNode);
   var
@@ -277,7 +286,7 @@ end;
 
 
 
-// filedrag-drop
+// file drag-drop
 procedure TForm1.WMDropFiles(var Msg: TWMDropFiles);
 var
   FilePath: array[0..MAX_PATH] of Char;
@@ -295,6 +304,23 @@ begin
 
   DragFinish(Msg.Drop);
 end;
+
+// toggle view
+
+procedure TForm1.ToggleRawView1Click(Sender: TObject);
+begin
+  ShowRaw := not ShowRaw;
+
+  // toggle memo1 and PanelDetailView
+  Memo1.Visible := ShowRaw;
+  PanelDetailView.Visible := not ShowRaw;
+
+  // test if this worked
+  LabelSelectNode.Visible := True;
+  LabelSelectNode.Caption := FXMLDoc.XML.Text;
+
+end;
+
 
 
 
