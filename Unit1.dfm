@@ -2,8 +2,8 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 441
-  ClientWidth = 624
+  ClientHeight = 600
+  ClientWidth = 800
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -16,9 +16,9 @@ object Form1: TForm1
   OnCreate = FormCreate
   TextHeight = 15
   object Splitter1: TSplitter
-    Left = 121
+    Left = 250
     Top = 0
-    Height = 441
+    Height = 600
     ExplicitLeft = 112
     ExplicitTop = 272
     ExplicitHeight = 100
@@ -26,20 +26,18 @@ object Form1: TForm1
   object TreeView1: TTreeView
     Left = 0
     Top = 0
-    Width = 121
-    Height = 441
+    Width = 250
+    Height = 600
     Align = alLeft
     Indent = 19
+    ReadOnly = True
     TabOrder = 0
-    ExplicitLeft = 48
-    ExplicitTop = 120
-    ExplicitHeight = 97
   end
   object Memo1: TMemo
-    Left = 124
+    Left = 253
     Top = 0
-    Width = 500
-    Height = 441
+    Width = 547
+    Height = 600
     Align = alClient
     Lines.Strings = (
       'Memo1')
@@ -47,11 +45,138 @@ object Form1: TForm1
     TabOrder = 1
     WordWrap = False
     OnChange = Memo1Change
-    ExplicitLeft = 121
-    ExplicitWidth = 503
+    ExplicitLeft = 256
+    ExplicitTop = -8
+  end
+  object PanelDetails: TPanel
+    Left = 253
+    Top = 0
+    Width = 547
+    Height = 600
+    Align = alClient
+    TabOrder = 2
+    Visible = False
+    ExplicitLeft = 256
+    object LabelSelectNode: TLabel
+      Left = 26
+      Top = 16
+      Width = 248
+      Height = 15
+      Caption = 'Select a node from the tree to view/edit details.'
+      Visible = False
+    end
+    object GroupBoxAttributes: TGroupBox
+      Left = 24
+      Top = 16
+      Width = 481
+      Height = 201
+      Caption = 'GroupBoxAttributes'
+      TabOrder = 0
+      Visible = False
+      object StringGridAttributes: TStringGrid
+        Left = 3
+        Top = 64
+        Width = 475
+        Height = 134
+        Align = alCustom
+        ColCount = 2
+        DefaultColWidth = 237
+        RowCount = 2
+        ScrollBars = ssHorizontal
+        TabOrder = 0
+      end
+      object btnAddAttribute: TButton
+        Left = 241
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'Add'
+        TabOrder = 1
+      end
+      object btnDeleteAttribute: TButton
+        Left = 403
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'Delete'
+        TabOrder = 2
+      end
+      object btnEditAttribute: TButton
+        Left = 322
+        Top = 16
+        Width = 75
+        Height = 25
+        Caption = 'Update'
+        TabOrder = 3
+      end
+    end
+    object GroupBoxText: TGroupBox
+      Left = 24
+      Top = 223
+      Width = 481
+      Height = 123
+      Caption = 'GroupBoxText'
+      TabOrder = 1
+      Visible = False
+      object MemoNodeText: TMemo
+        Left = 2
+        Top = 17
+        Width = 477
+        Height = 104
+        Align = alClient
+        Lines.Strings = (
+          'MemoNodeText')
+        TabOrder = 0
+        ExplicitLeft = 3
+        ExplicitTop = 16
+        ExplicitWidth = 405
+      end
+    end
+    object GroupBoxChildren: TGroupBox
+      Left = 24
+      Top = 376
+      Width = 481
+      Height = 217
+      Caption = 'GroupBoxChildren'
+      TabOrder = 2
+      Visible = False
+      object ListBoxChildren: TListBox
+        Left = 3
+        Top = 24
+        Width = 150
+        Height = 174
+        ItemHeight = 15
+        TabOrder = 0
+      end
+      object BtnAddChild: TButton
+        Left = 241
+        Top = 184
+        Width = 75
+        Height = 25
+        Caption = 'Add'
+        TabOrder = 1
+      end
+      object BtnEditChild: TButton
+        Left = 322
+        Top = 184
+        Width = 75
+        Height = 25
+        Caption = 'Update'
+        TabOrder = 2
+      end
+      object BtnDeleteChild: TButton
+        Left = 403
+        Top = 184
+        Width = 75
+        Height = 25
+        Caption = 'Delete'
+        TabOrder = 3
+      end
+    end
   end
   object MainMenu1: TMainMenu
-    Left = 584
+    Left = 744
+    Top = 8
     object File1: TMenuItem
       Caption = 'File'
       object New1: TMenuItem
@@ -79,17 +204,23 @@ object Form1: TForm1
         OnClick = Exit1Click
       end
     end
+    object View1: TMenuItem
+      Caption = 'View'
+      object ToggleRawView1: TMenuItem
+        Caption = 'Toggle Raw View'
+      end
+    end
   end
   object OpenDialog1: TOpenDialog
     DefaultExt = #39'.xml'#39
     Filter = #39'XML files (*.xml)|*.xml|All files (*.*)|*.*'#39
-    Left = 584
-    Top = 56
+    Left = 744
+    Top = 64
   end
   object SaveDialog1: TSaveDialog
     DefaultExt = #39'.xml'#39
     Filter = 'XML files (*.xml)|*.xml|All files (*.*)|*.*'#39
-    Left = 584
-    Top = 112
+    Left = 744
+    Top = 128
   end
 end

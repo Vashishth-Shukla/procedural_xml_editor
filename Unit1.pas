@@ -5,7 +5,10 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.Menus,
-  Xml.XMLDoc, Xml.XMLIntf, Vcl.ExtCtrls;
+  Xml.XMLDoc, Xml.XMLIntf, Vcl.ExtCtrls,
+  ShellAPI,
+  System.IOUtils, Vcl.Grids,
+  StrUtils;
 
 type
   TForm1 = class(TForm)
@@ -21,7 +24,26 @@ type
     SaveDialog1: TSaveDialog;
     SaveAs1: TMenuItem;
     Splitter1: TSplitter;
+    View1: TMenuItem;
+    ToggleRawView1: TMenuItem;
+    PanelDetails: TPanel;
+    GroupBoxAttributes: TGroupBox;
+    GroupBoxText: TGroupBox;
+    GroupBoxChildren: TGroupBox;
+    StringGridAttributes: TStringGrid;
+    btnAddAttribute: TButton;
+    btnDeleteAttribute: TButton;
+    btnEditAttribute: TButton;
+    MemoNodeText: TMemo;
+    LabelSelectNode: TLabel;
+    BtnAddChild: TButton;
+    BtnEditChild: TButton;
+    BtnDeleteChild: TButton;
+    ListBoxChildren: TListBox;
     procedure New1Click(Sender: TObject);
+
+    procedure LoadXMLFile(var FileName: string);
+
     procedure Open1Click(Sender: TObject);
     procedure Save1Click(Sender: TObject);
     procedure SaveAs1Click(Sender: TObject);
@@ -30,11 +52,19 @@ type
     procedure Exit1Click(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 
-    procedure LoadXMLIntoTree(const XMLText: string);
+    procedure LoadXMLIntoTree(Doc: IXMLDocument);
+
+    procedure WMDropFiles(var Msg: TWMDropFiles); message WM_DROPFILES; // Allow file darg-drop
+
 
   private
     CurrentFileName: string;
     Modified: Boolean;
+
+    FXMLDoc: IXMLDocument;
+    ShowRaw: Boolean;
+
+
   public
     { Public declarations }
   end;
@@ -52,10 +82,13 @@ begin
 end;
 
 procedure TForm1.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-
 var
   dlg: TForm;
+  IsTempFile: Boolean;
 begin
+  IsTempFile := (CurrentFileName <> '') and
+    TPath.GetTempPath.StartsWith(ExtractFilePath(CurrentFileName));
+
   if Modified then
   begin
     dlg := CreateMessageDialog('You have unsaved changes. Save before exiting?',
@@ -69,18 +102,35 @@ begin
         begin
           Save1Click(nil);
           CanClose := not Modified;
+          if CanClose and IsTempFile and FileExists(CurrentFileName) then
+            DeleteFile(CurrentFileName);
         end;
-      mrNo: CanClose := True;
-      mrCancel: CanClose := False;
+      mrNo:
+        begin
+          CanClose := True;
+          // If user discards changes and it's a temp file, delete it
+          if IsTempFile and FileExists(CurrentFileName) then
+            DeleteFile(CurrentFileName);
+        end;
+      mrCancel:
+        CanClose := False;
     end;
     dlg.Free;
   end
   else
+  begin
     CanClose := True;
+    // No unsaved changes but if it's temp file, delete it (no longer needed)
+    if IsTempFile and FileExists(CurrentFileName) then
+      DeleteFile(CurrentFileName);
+  end;
 end;
+
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  ShowRaw := True; // Raw view is default --- for now
+  DragAcceptFiles(Handle, True); // Allow file drag-drop
   New1Click(nil); // simulate clicking File > New on startup
 end;
 
@@ -88,58 +138,90 @@ procedure TForm1.Memo1Change(Sender: TObject);
 begin
   Modified := True;
 
+  if not ShowRaw then
+    Exit;
 
-  // Optional live update — careful with performance!
+  // Optional: live update TreeView only when valid XML
   try
-    LoadXMLIntoTree(Memo1.Text);
+    FXMLDoc.LoadFromXML(Memo1.Text);
+    FXMLDoc.Active := True;
+    LoadXMLIntoTree(FXMLDoc);
   except
-    // silently fail if bad XML during typing
+    // If invalid XML, don't update tree (just ignore silently)
   end;
-
 end;
 
 procedure TForm1.New1Click(Sender: TObject);
+var
+  TempFile: string;
 begin
-  CurrentFileName := '';
+  TempFile := TPath.Combine(TPath.GetTempPath, TPath.GetRandomFileName + '.xml');
 
-  Memo1.Clear;
-  Memo1.Text := '<?xml version="1.0" encoding="UTF-8"?>' + sLineBreak +
-              '<root>' + sLineBreak +
-              '</root>';
+  // Create minimal XML content
+  Memo1.Lines.Text := '<?xml version="1.0" encoding="UTF-8"?>' + sLineBreak +
+                      '<root>'+ sLineBreak +
+                      '<!-- Add your XML content here -->' + sLineBreak +
+                      '</root>';
+
+  Memo1.Lines.SaveToFile(TempFile);
+
+  CurrentFileName := TempFile;
+
+  LoadXMLFile(CurrentFileName); // Use your existing method to load file and fill TreeView
+
+  Modified := False;
+  Caption := 'XML Editor - New Document (Unsaved)';
+end;
+
+
+procedure TForm1.LoadXMLFile(var FileName: string);
+begin
+  FXMLDoc := TXMLDocument.Create(nil);
+  FXMLDoc.LoadFromFile(FileName);
+  FXMLDoc.Active := True;
+
+  if ShowRaw then
+    Memo1.Text := FXMLDoc.XML.Text
+  else
+    Memo1.Clear;
 
   TreeView1.Items.Clear;
-  TreeView1.Items.Add(nil, 'root');
-  Modified := False;
+  LoadXMLIntoTree(FXMLDoc);
 
-  Caption := 'XML Editor - New File';
+  Modified := False;
+  Caption := 'XML Editor - ' + FileName;
 end;
+
+
 
 procedure TForm1.Open1Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
   begin
-    Memo1.Lines.LoadFromFile(OpenDialog1.FileName);
+
     CurrentFileName := OpenDialog1.FileName;
-    TreeView1.Items.Clear;
-    LoadXMLIntoTree(Memo1.Text);
-    Modified := False;
-    Caption := 'XML Editor - ' + OpenDialog1.FileName;
+
+    LoadXMLFile(CurrentFileName);
+
   end;
 end;
 
 procedure TForm1.Save1Click(Sender: TObject);
+var
+  IsTempFile: Boolean;
 begin
-  if CurrentFileName = '' then
-  begin
-    if SaveDialog1.Execute then
-    begin
-      CurrentFileName := SaveDialog1.FileName;
-    end
-    else
-      Exit; // Cancelled
+  // Check if CurrentFileName is inside the temp folder
+  IsTempFile := (CurrentFileName <> '') and
+    TPath.GetTempPath.StartsWith(ExtractFilePath(CurrentFileName));
 
+  if IsTempFile or (CurrentFileName = '') then
+  begin
+    // Redirect to Save As to force user to pick a real location
+    SaveAs1Click(Sender);
+    Exit;
   end;
 
+  // Normal save
   Memo1.Lines.SaveToFile(CurrentFileName);
   Caption := 'XML Editor - ' + CurrentFileName;
   Modified := False;
@@ -158,11 +240,8 @@ begin
 end;
 
 
-procedure TForm1.LoadXMLIntoTree(const XMLText: string);
-var
-  XMLDoc: IXMLDocument;
-
-  procedure AddNodeToTreeView(XMLNode: IXMLNode; TreeNode: TTreeNode);
+procedure TForm1.LoadXMLIntoTree(Doc: IXMLDocument);
+  procedure AddNodeToTreeView(XMLNode: IXMLNode; ParentTreeNode: TTreeNode);
   var
     i: Integer;
     DisplayText: string;
@@ -178,36 +257,45 @@ var
     if (XMLNode.ChildNodes.Count = 0) and (Trim(XMLNode.Text) <> '') then
       DisplayText := DisplayText + ' = ' + Trim(XMLNode.Text);
 
-    NewTreeNode := TreeView1.Items.AddChild(TreeNode, DisplayText);
+    NewTreeNode := TreeView1.Items.AddChildObject(ParentTreeNode, DisplayText, TObject(XMLNode));
 
     for i := 0 to XMLNode.ChildNodes.Count - 1 do
       AddNodeToTreeView(XMLNode.ChildNodes[i], NewTreeNode);
   end;
-
 begin
-  // Parse XML *first* before touching TreeView
-  XMLDoc := TXMLDocument.Create(nil);
-  XMLDoc.Options := [doNodeAutoCreate, doNodeAutoIndent];
-
+  TreeView1.Items.BeginUpdate;
   try
-    XMLDoc.LoadFromXML(XMLText);
-    XMLDoc.Active := True;
+    TreeView1.Items.Clear;
 
-    if XMLDoc.DocumentElement = nil then Exit;
-
-    // Only clear and update tree if XML is valid
-    TreeView1.Items.BeginUpdate;
-    try
-      TreeView1.Items.Clear;
-      AddNodeToTreeView(XMLDoc.DocumentElement, nil);
-      TreeView1.FullExpand;
-    finally
-      TreeView1.Items.EndUpdate;
-    end;
-  except
-    // Let calling method handle (or ignore) this
-    raise;
+    if Assigned(Doc) and Assigned(Doc.DocumentElement) then
+      AddNodeToTreeView(Doc.DocumentElement, nil);
+  finally
+    TreeView1.Items.EndUpdate;
+    TreeView1.FullExpand;
   end;
 end;
+
+
+
+// filedrag-drop
+procedure TForm1.WMDropFiles(var Msg: TWMDropFiles);
+var
+  FilePath: array[0..MAX_PATH] of Char;
+begin
+  if DragQueryFile(Msg.Drop, 0, FilePath, MAX_PATH) > 0 then
+  begin
+    if FileExists(FilePath) and SameText(ExtractFileExt(FilePath), '.xml') then
+    begin
+      CurrentFileName := FilePath;
+      LoadXMLFile(CurrentFileName); // <-- Use your existing file opening method
+    end
+    else
+      ShowMessage('Please drop a valid .xml file.');
+  end;
+
+  DragFinish(Msg.Drop);
+end;
+
+
 
 end.
