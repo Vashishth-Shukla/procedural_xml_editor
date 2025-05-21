@@ -32,6 +32,7 @@ object Form1: TForm1
     Indent = 19
     ReadOnly = True
     TabOrder = 0
+    OnClick = TreeView1Click
   end
   object Memo1: TMemo
     Left = 253
@@ -67,9 +68,8 @@ object Form1: TForm1
       Top = 16
       Width = 481
       Height = 201
-      Caption = 'GroupBoxAttributes'
+      Caption = 'Node Attributes'
       TabOrder = 0
-      Visible = False
       object StringGridAttributes: TStringGrid
         Left = 3
         Top = 64
@@ -109,29 +109,43 @@ object Form1: TForm1
     end
     object GroupBoxText: TGroupBox
       Left = 24
-      Top = 223
+      Top = 239
       Width = 481
       Height = 123
-      Caption = 'GroupBoxText'
+      Caption = 'Node Text'
       TabOrder = 1
-      Visible = False
       object MemoNodeText: TMemo
         Left = 2
         Top = 17
-        Width = 477
-        Height = 104
-        Align = alClient
+        Width = 476
+        Height = 48
         Lines.Strings = (
           'MemoNodeText')
         TabOrder = 0
       end
+      object btnEditNodeText: TButton
+        Left = 322
+        Top = 82
+        Width = 75
+        Height = 25
+        Caption = 'Update'
+        TabOrder = 1
+      end
+      object btnDeleteNodeText: TButton
+        Left = 403
+        Top = 82
+        Width = 75
+        Height = 25
+        Caption = 'Delete'
+        TabOrder = 2
+      end
     end
     object GroupBoxChildren: TGroupBox
-      Left = 24
+      Left = 26
       Top = 384
       Width = 481
       Height = 217
-      Caption = 'GroupBoxChildren'
+      Caption = 'Node Children'
       TabOrder = 2
       Visible = False
       object ListBoxChildren: TListBox
