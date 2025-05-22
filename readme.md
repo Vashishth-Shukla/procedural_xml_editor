@@ -87,10 +87,3 @@ This tool is intended for quick editing and exploration of XML documents with a 
 ## License
 
 Provided for educational and internal tooling use. No formal license applied.
-
-# Delphi XML Editor - User Manual
-
-## Introduction
-
-This user manual explains how to use the Delphi XML Editor, a tool for creating, editing, and saving XML documents with a graphical user interface and optional raw text view.
-
