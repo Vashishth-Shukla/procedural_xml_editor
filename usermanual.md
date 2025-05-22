@@ -42,7 +42,7 @@ This user manual explains how to use the Delphi XML Editor, a tool for creating,
 * Direct edits are allowed.
 * If valid XML is entered, the tree view updates automatically.
 
-### Using the Structured View
+### Using the Structured View (not implemented yet!)
 
 * Toggle with **View > Toggle Raw View**.
 * Select a node in the tree to view/edit its:
