@@ -33,6 +33,7 @@ object Form1: TForm1
     ReadOnly = True
     TabOrder = 0
     OnClick = TreeView1Click
+    ExplicitHeight = 587
   end
   object Memo1: TMemo
     Left = 253
@@ -46,6 +47,8 @@ object Form1: TForm1
     TabOrder = 1
     WordWrap = False
     OnChange = Memo1Change
+    ExplicitWidth = 537
+    ExplicitHeight = 587
   end
   object PanelDetailView: TPanel
     Left = 253
@@ -55,6 +58,8 @@ object Form1: TForm1
     Align = alClient
     TabOrder = 2
     Visible = False
+    ExplicitWidth = 537
+    ExplicitHeight = 587
     object LabelSelectNode: TLabel
       Left = 26
       Top = 16

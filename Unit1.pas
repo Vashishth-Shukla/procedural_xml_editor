@@ -357,10 +357,11 @@ begin
   LabelSelectNode.Visible := False;
 
   // --- Attributes ---
+  GroupBoxAttributes.Visible := True;
+  GroupBoxAttributes.Enabled := True;
+  StringGridAttributes.Visible := True;
   if XMLNode.AttributeNodes.Count > 0 then
   begin
-    GroupBoxAttributes.Visible := True;
-    GroupBoxAttributes.Enabled := True;
     StringGridAttributes.RowCount := XMLNode.AttributeNodes.Count + 1;
     for i := 0 to XMLNode.AttributeNodes.Count - 1 do
     begin
